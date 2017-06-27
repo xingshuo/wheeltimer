@@ -5,80 +5,75 @@ local timer = require "src/timer"
 local floor = math.floor 
 local sfmt = string.format 
 
-function get_time()
-    return floor(twheel.gettime()*100)
-end
-
 function sleep(n) --n个10ms
     local ti = n/100
     os.execute(sfmt("sleep %s",ti))
 end
 
-local time_mgr = timer:new()
-
-local begin_ti = get_time()
-time_mgr:start(begin_ti)
+local time_mgr = timer:new(1)
+print(sfmt("execute start!! %sM time:%s",collectgarbage("count"),time_mgr:get_realtime()))
 
 time_mgr:timeout(100, function ( ... )
-    print("i am 2222222")
+    print("i am 3333333",time_mgr:get_realtime())
 end)
 
 time_mgr:timeout(50, function ( ... )
-    print("i am 1111111")
+    print("i am 1111111",time_mgr:get_realtime())
 end)
 
-local handle = time_mgr:loop(70, function ( ... )
-    print("i am 33333333")
-end)
-
-print("execute start!!")
-
-while true do
-    sleep(50)
-    local cur_time = get_time()
-    local elapse = cur_time-time_mgr.timestamp
-    print(sfmt("cur_time:%s elapse:%s",cur_time,elapse))
-    time_mgr:update(elapse)
-    if cur_time - begin_ti > 4*100 then
+local handle
+local cnt = 0
+handle = time_mgr:loop(70, function ( ... )
+    print("i am 2222222",time_mgr:get_realtime())
+    cnt = cnt + 1
+    if cnt > 3 then
+        print("remove timer 2222222")
         time_mgr:remove_timer(handle)
-        break
+        time_mgr:timeout(300, function ( ... )
+            print("stop wheel timer",time_mgr:get_realtime())
+            time_mgr:stop()
+        end)
     end
-end
+end, -10)
 
-print("execute middle!!")
+time_mgr:start()
 
+local cnt = 0
 time_mgr:loop(900, function ( ... )
-    print("i am 4444444")
+    print("i am 66666666",time_mgr:get_realtime())
+    cnt = cnt + 1
+    if cnt > 3 then
+        print("stop wheel timer")
+        time_mgr:stop()
+    end
 end)
 
 time_mgr:timeout(500, function ( ... )
-    print("i am 5555555")
+    print("i am 44444444",time_mgr:get_realtime())
 end)
 
 time_mgr:timeout(800, function ( ... )
-    print("i am 6666666")
+    print("i am 55555555",time_mgr:get_realtime())
+    print("snowslide test")
+    sleep(1000)
+end)
+
+time_mgr:timeout(1400, function ( ... )
+    print("i am 7777777",time_mgr:get_realtime())
 end)
 
 time_mgr:timeout(1500, function ( ... )
-    print("i am 7777777")
+    print("i am 8888888",time_mgr:get_realtime())
 end)
 
-begin_ti = get_time()
 
-time_mgr:stop()
+time_mgr:timeout(1900, function ( ... )
+    print("i am 99999999",time_mgr:get_realtime())
+end)
 
-while true do
-    sleep(200)
-    local cur_time = get_time()
-    local elapse = cur_time-time_mgr.timestamp
-    print(sfmt("cur_time:%s elapse:%s",cur_time,elapse))
-    time_mgr:update(elapse)
-    if cur_time - begin_ti > 10*100 and not time_mgr.running then
-        time_mgr:start()
-    end
-    if cur_time - begin_ti > 30*100 then
-        break
-    end
-end
-
-print("execute end!!")
+print("restart wheel timer!!")
+time_mgr:start()
+local endtime = time_mgr:get_realtime()
+time_mgr = nil
+collectgarbage("collect")
+print(sfmt("execute end!! %sM time:%s",collectgarbage("count"),endtime))

@@ -12,5 +12,8 @@ $(BUILD)/ltimer.so: $(SRC)/timer.c
 $(BUILD)/twheel.so: 3rd/twheel.c
 	gcc $(CFLAGS) $(SHARED) $^ -o $@ -I$(INC)
 
+test:
+	bin/lua test.lua
+
 clean:
 	rm $(BUILD)/*
