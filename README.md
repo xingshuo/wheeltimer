@@ -1,4 +1,4 @@
-# aoi of checker
+# wheel timer
 Wiki
 =========
     make && make test
